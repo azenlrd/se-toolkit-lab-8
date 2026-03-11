@@ -220,7 +220,7 @@ Each task includes a `**Purpose:**` line containing exactly one sentence that ex
 
 ### 7.4. Summary
 
-Each task includes a summary paragraph of two to four sentences describing what the student does. The summary should be specific enough to guide task file creation but not so detailed that it prescribes every step.
+Each task includes a summary paragraph of four to seven sentences describing what the student does. The summary should be specific enough to guide task file creation but not so detailed that it prescribes every step.
 
 ### 7.5. Acceptance criteria
 
@@ -296,7 +296,7 @@ Severity guide:
 - Are there four to six learning outcomes?
 - Does the "In simple words" list match outcomes one-to-one?
 - Are purpose statements exactly one sentence?
-- Are summaries two to four sentences?
+- Are summaries four to seven sentences?
 - Are `---` rules present between tasks?
 
 ### 9.8. D8. Practical feasibility
@@ -331,7 +331,7 @@ Severity guide:
 - [ ] Required tasks build on each other sequentially.
 - [ ] The optional task is independent.
 - [ ] Each task has a one-sentence `**Purpose:**`.
-- [ ] Each task has a two-to-four-sentence summary.
+- [ ] Each task has a four-to-seven-sentence summary.
 - [ ] Each task has three to five concrete, verifiable acceptance criteria.
 - [ ] Acceptance criteria use plain bullets (`-`), not checkboxes (`- [ ]`).
 - [ ] `---` rules separate tasks within a section.
