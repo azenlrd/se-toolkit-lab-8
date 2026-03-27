@@ -142,7 +142,7 @@ docker compose --env-file .env.docker.secret down
    docker compose --env-file .env.docker.secret ps --format "table {{.Service}}\t{{.Status}}"
    ```
 
-   You should see the base services running:
+   You should see the foundation services listed below:
 
    ```terminal
    SERVICE           STATUS
