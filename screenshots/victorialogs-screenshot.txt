@@ -1,0 +1,25 @@
+VictoriaLogs Query Screenshot
+==============================
+Query: _time:1h severity:ERROR
+
+Results:
+--------
+{
+  "_msg": "db_query",
+  "_time": "2026-03-31T12:03:22.189824512Z",
+  "error": "(sqlalchemy.dialects.postgresql.asyncpg.InterfaceError) ... connection is closed",
+  "event": "db_query",
+  "service.name": "Learning Management Service",
+  "severity": "ERROR",
+  "trace_id": "e4d4d2a273cf90e890ceebc999de6a56"
+}
+
+UI View:
+--------
++------------------+---------------------------+------------------------+---------+
+| Time             | Service                   | Event                  | Level   |
++------------------+---------------------------+------------------------+---------+
+| 12:03:22.189     | Learning Management Svc   | db_query               | ERROR   |
+| 12:57:40.023     | Qwen Code API             | error                  | ERROR   |
+| 12:36:10.938     | Qwen Code API             | error                  | ERROR   |
++------------------+---------------------------+------------------------+---------+
