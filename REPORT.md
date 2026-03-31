@@ -204,11 +204,18 @@ Span count: 6
 
 **Nanobot logs showing tools registered:**
 ```
-nanobot-1  | MCP: registered tool 'mcp_obs_logs_search' from server 'obs'
-nanobot-1  | MCP: registered tool 'mcp_obs_logs_error_count' from server 'obs'
-nanobot-1  | MCP: registered tool 'mcp_obs_traces_list' from server 'obs'
-nanobot-1  | MCP: registered tool 'mcp_obs_traces_get' from server 'obs'
-nanobot-1  | MCP server 'obs': connected, 4 tools registered
+nanobot-1  | 2026-03-31 12:15:56.023 | DEBUG | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_obs_logs_search' from server 'obs'
+nanobot-1  | 2026-03-31 12:15:56.024 | DEBUG | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_obs_logs_error_count' from server 'obs'
+nanobot-1  | 2026-03-31 12:15:56.024 | DEBUG | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_obs_traces_list' from server 'obs'
+nanobot-1  | 2026-03-31 12:15:56.024 | DEBUG | nanobot.agent.tools.mcp:connect_mcp_servers:226 - MCP: registered tool 'mcp_obs_traces_get' from server 'obs'
+nanobot-1  | 2026-03-31 12:15:56.024 | INFO  | nanobot.agent.tools.mcp:connect_mcp_servers:246 - MCP server 'obs': connected, 4 tools registered
+```
+
+**Nanobot logs showing tool calls during observability query:**
+```
+nanobot-1  | 2026-03-31 12:18:30.392 | INFO | nanobot.agent.loop:_prepare_tools:253 - Tool call: mcp_obs_logs_search({"query": "service.name:\"lms\" severity:ERROR", "time_range": "10m", "limit": 10})
+nanobot-1  | 2026-03-31 12:18:59.631 | INFO | nanobot.agent.loop:_prepare_tools:253 - Tool call: mcp_obs_logs_error_count({"service": "lms", "time_range": "10m"})
+nanobot-1  | 2026-03-31 12:19:05.965 | INFO | nanobot.agent.loop:_process_message:479 - Response to webchat:f926a056-1108-4000-9233-fef8d0e61db0: Good news! **No LMS backend errors** in the last 10 minutes.
 ```
 
 ### Agent response under normal conditions (PostgreSQL running)
@@ -238,19 +245,20 @@ Tool call: mcp_obs_logs_search({"query": "severity:ERROR", "time_range": "1h", "
 
 **Agent response:**
 ```
-The backend is **not doing well** right now. Here's what I found:
+The backend has issues. Here's what I found:
 
-## LMS Backend Status: ❌ Unhealthy
-
-**Issue:** HTTP 4...
+## LMS Backend Status: Errors Detected
 ```
 
 **User:** "Any LMS backend errors in the last 10 minutes?"
 
-**Nanobot tool calls:**
+**Nanobot logs showing tool calls during failure investigation:**
 ```
-Tool call: mcp_obs_logs_search({"query": "service.name:\"Learning Management Service\" severity:ERROR", "time_range": "10m", "limit": 20})
-Tool call: mcp_obs_traces_list({"service": "Learning Management Service", "limit": 5})
+nanobot-1  | 2026-03-31 12:19:41.951 | INFO | nanobot.agent.loop:_prepare_tools:253 - Tool call: mcp_obs_logs_error_count({"time_range": "1h"})
+nanobot-1  | 2026-03-31 12:19:52.832 | INFO | nanobot.agent.loop:_prepare_tools:253 - Tool call: mcp_obs_logs_search({"query": "severity:ERROR", "time_range": "1h", "limit": 10})
+nanobot-1  | 2026-03-31 12:20:02.691 | INFO | nanobot.agent.loop:_prepare_tools:253 - Tool call: mcp_obs_logs_search({"query": "service.name:\"Learning Management Service\" severity:ERROR", "time_range": "10m", "limit": 20})
+nanobot-1  | 2026-03-31 12:20:05.137 | INFO | nanobot.agent.loop:_prepare_tools:253 - Tool call: mcp_obs_traces_list({"service": "Learning Management Service", "limit": 5})
+nanobot-1  | 2026-03-31 12:20:15.318 | INFO | nanobot.agent.loop:_process_message:479 - Response to webchat:eda0cdff-12e3-4a61-ace9-7ea4e0717f55: ## LMS Backend Errors — Last 10 Minutes... **Yes, there is 1 error** in the last 10 minutes
 ```
 
 **Agent response:**
