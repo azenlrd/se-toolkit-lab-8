@@ -1,0 +1,64 @@
+VictoriaTraces - Error Trace Screenshot
+========================================
+Trace ID: e4d4d2a273cf90e890ceebc999de6a56
+Service: Learning Management Service
+Status: ERROR
+
+Span Hierarchy:
+---------------
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Trace: e4d4d2a273cf90e890ceebc999de6a56                                   │
+│ Service: Learning Management Service                                        │
+│ Duration: ~84ms                                                             │
+│ Status: ❌ ERROR                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  ┌─ SELECT db-lab-8 (29006μs) ─────────────────────────────────────────────┐
+  │  DB: postgresql                                                          │
+  │  Statement: SELECT item.id, item.type, item.parent_id...                 │
+  │  Status: ❌ ERROR                                                        │
+  │  Error: connection is closed                                             │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+  ┌─ GET /items/ http send (605μs) ─────────────────────────────────────────┐
+  │  HTTP response sent                                                    │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+  ┌─ GET /items/ http send (39μs) ──────────────────────────────────────────┐
+  │  HTTP response sent                                                    │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+  ┌─ GET /items/ http send (15μs) ──────────────────────────────────────────┐
+  │  HTTP response sent                                                    │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+  ┌─ connect (3013μs) ──────────────────────────────────────────────────────┐
+  │  DB: postgresql                                                          │
+  │  Status: OK                                                              │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+  ┌─ GET /items/ (83988μs) ─────────────────────────────────────────────────┐
+  │  HTTP request received                                                  │
+  │  Status: 500 Internal Server Error                                      │
+  └──────────────────────────────────────────────────────────────────────────┘
+
+Timeline:
+---------
+0ms          20ms         40ms         60ms         80ms
+|────────────|────────────|────────────|────────────|
+[=connect=]
+            [==========SELECT db-lab-8 (ERROR)==========]
+            [==================GET /items/ (84ms)==================]
+                                                         [http][http][http]
+
+Error Details:
+--------------
+Span: SELECT db-lab-8
+  - Duration: 29006μs
+  - Span ID: 025e33190fbdd8b4
+  - db.name: db-lab-8
+  - db.system: postgresql
+  - db.user: postgres
+  - error: true ← ERROR FLAG
+
+Root Cause: PostgreSQL connection closed (database was stopped)

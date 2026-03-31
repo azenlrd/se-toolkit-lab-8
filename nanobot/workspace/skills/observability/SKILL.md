@@ -21,7 +21,7 @@ You have access to observability tools that let you query **VictoriaLogs** and *
   - `service`: Service name to search (e.g., `Learning Management Service`)
   - `limit`: Maximum traces to return (default: 5)
 
-- **traces_get** — Fetch a specific trace by ID
+- **traces_get` — Fetch a specific trace by ID
   - `trace_id`: The trace ID to fetch
 
 ## How to Use
@@ -43,6 +43,26 @@ Your reasoning:
 3. Extract `trace_id` from log entries
 4. Call `traces_get(trace_id="...")` to see the full trace
 5. Summarize: what failed, where, and why
+
+### When the user asks "What went wrong?" or "Check system health"
+
+This is a **one-shot investigation** request. Follow this flow:
+
+1. **Check for recent errors** with `logs_error_count(time_range="10m")`
+2. **Search for specific error logs** with `logs_search(query='severity:ERROR', time_range="10m", limit=10)`
+3. **Extract a trace_id** from the error logs
+4. **Fetch the full trace** with `traces_get(trace_id="...")`
+5. **Provide a single coherent summary** that includes:
+   - **Log evidence**: Quote the specific error message from logs
+   - **Trace evidence**: Describe the failing span from the trace
+   - **Root cause**: Name the affected service and the failing operation
+   - **Impact**: Explain what the user would experience
+
+**Important:** Look for discrepancies between:
+- What the logs/traces show (real database/backend failure)
+- What the HTTP response reported (may be misleading like `404 Items not found`)
+
+The planted bug may cause the backend to misreport database failures as `404` errors.
 
 ### LogsQL tips
 
