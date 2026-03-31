@@ -729,7 +729,7 @@ wheels = [
 [[package]]
 name = "mcp-lms"
 version = "1.0.0"
-source = { editable = "../mcp/mcp-lms" }
+source = { directory = "../mcp/mcp-lms" }
 dependencies = [
     { name = "httpx" },
     { name = "mcp" },
@@ -752,9 +752,24 @@ requires-dist = [
 ]
 
 [[package]]
+name = "mcp-obs"
+version = "0.1.0"
+source = { directory = "../mcp/mcp-obs" }
+dependencies = [
+    { name = "httpx" },
+    { name = "mcp" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.27.0" },
+    { name = "mcp", specifier = ">=1.0.0" },
+]
+
+[[package]]
 name = "mcp-webchat"
 version = "0.1.0"
-source = { editable = "../nanobot-websocket-channel/mcp-webchat" }
+source = { directory = "../nanobot-websocket-channel/mcp-webchat" }
 dependencies = [
     { name = "httpx" },
     { name = "mcp" },
@@ -854,6 +869,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "mcp-lms" },
+    { name = "mcp-obs" },
     { name = "mcp-webchat" },
     { name = "nanobot-ai" },
     { name = "nanobot-webchat" },
@@ -861,10 +877,11 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "mcp-lms", editable = "../mcp/mcp-lms" },
-    { name = "mcp-webchat", editable = "../nanobot-websocket-channel/mcp-webchat" },
+    { name = "mcp-lms", directory = "../mcp/mcp-lms" },
+    { name = "mcp-obs", directory = "../mcp/mcp-obs" },
+    { name = "mcp-webchat", directory = "../nanobot-websocket-channel/mcp-webchat" },
     { name = "nanobot-ai", url = "https://github.com/HKUDS/nanobot/archive/e7d371ec1e6531b28898ec2c869ef338e8dd46ec.zip" },
-    { name = "nanobot-webchat", editable = "../nanobot-websocket-channel/nanobot-webchat" },
+    { name = "nanobot-webchat", directory = "../nanobot-websocket-channel/nanobot-webchat" },
 ]
 
 [[package]]
@@ -965,7 +982,7 @@ requires-dist = [{ name = "pydantic", specifier = ">=2.12.0,<3.0.0" }]
 [[package]]
 name = "nanobot-webchat"
 version = "1.0.0"
-source = { editable = "../nanobot-websocket-channel/nanobot-webchat" }
+source = { directory = "../nanobot-websocket-channel/nanobot-webchat" }
 dependencies = [
     { name = "aiohttp" },
     { name = "nanobot-ai" },

@@ -6,6 +6,7 @@ requires-python = "==3.14.*"
 members = [
     "lms-backend",
     "mcp-lms",
+    "mcp-obs",
     "mcp-webchat",
     "nanobot-channel-protocol",
     "nanobot-webchat",
@@ -927,6 +928,21 @@ requires-dist = [
     { name = "opentelemetry-instrumentation-httpx", specifier = ">=0.61b0" },
     { name = "opentelemetry-instrumentation-logging", specifier = ">=0.61b0" },
     { name = "pydantic", specifier = ">=2.12.0,<3.0.0" },
+]
+
+[[package]]
+name = "mcp-obs"
+version = "0.1.0"
+source = { editable = "mcp/mcp-obs" }
+dependencies = [
+    { name = "httpx" },
+    { name = "mcp" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.27.0" },
+    { name = "mcp", specifier = ">=1.0.0" },
 ]
 
 [[package]]

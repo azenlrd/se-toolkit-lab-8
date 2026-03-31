@@ -87,15 +87,200 @@ nanobot-1  | INFO | nanobot.agent.loop:_process_message:479 - Response to webcha
 
 ## Task 3A — Structured logging
 
-<!-- Paste happy-path and error-path log excerpts, VictoriaLogs query screenshot -->
+**CHECKPOINT: PASS** — Structured logging explored and verified.
+
+**Happy-path log excerpt** (request_started → request_completed with status 200):
+
+```
+backend-1  | 2026-03-31 12:02:18,459 INFO [lms_backend.main] [main.py:62] - request_started
+backend-1  | 2026-03-31 12:02:18,477 INFO [lms_backend.auth] [auth.py:30] - auth_success
+backend-1  | 2026-03-31 12:02:18,479 INFO [lms_backend.db.items] [items.py:16] - db_query
+backend-1  | 2026-03-31 12:02:18,518 INFO [lms_backend.main] [main.py:74] - request_completed
+```
+
+**Error-path log excerpt** (db_query with error after stopping PostgreSQL):
+
+```
+backend-1  | 2026-03-31 12:03:22,142 INFO [lms_backend.db.items] [items.py:16] - db_query
+backend-1  | 2026-03-31 12:03:22,189 ERROR [lms_backend.db.items] [items.py:23] - db_query
+backend-1  | 2026-03-31 12:03:22,190 WARNING [lms_backend.routers.items] [items.py:23] - items_list_failed_as_not_found
+backend-1  | 2026-03-31 12:03:22,199 INFO [lms_backend.main] [main.py:74] - request_completed
+```
+
+**VictoriaLogs query result** (query: `_time:10m service.name:"Learning Management Service" severity:ERROR`):
+
+```json
+{
+    "_msg": "db_query",
+    "_time": "2026-03-31T12:03:22.189824512Z",
+    "error": "(sqlalchemy.dialects.postgresql.asyncpg.InterfaceError) ... connection is closed",
+    "event": "db_query",
+    "service.name": "Learning Management Service",
+    "severity": "ERROR",
+    "trace_id": "e4d4d2a273cf90e890ceebc999de6a56"
+}
+```
+
+---
 
 ## Task 3B — Traces
 
-<!-- Screenshots: healthy trace span hierarchy, error trace -->
+**CHECKPOINT: PASS** — Traces explored and verified in VictoriaTraces UI.
+
+**VictoriaTraces API query:**
+```
+GET /select/jaeger/api/traces?service=Learning%20Management%20Service&limit=5
+GET /select/jaeger/api/traces/<traceID>
+```
+
+**Healthy trace span hierarchy** (Trace ID: `11de6152bf9cc15407722ac42570d8ff`):
+
+```
+=== Trace: 11de6152bf9cc15407722ac42570d8ff ===
+Span count: 6
+  - Span: SELECT db-lab-8 (duration: 24109us)
+    DB: SELECT item.id, item.type, item.parent_id, item.title...
+  - Span: GET /items/ http send (duration: 67us)
+  - Span: GET /items/ http send (duration: 36us)
+  - Span: GET /items/ http send (duration: 16us)
+  - Span: connect (duration: 686us)
+```
+
+**Error trace span hierarchy** (Trace ID: `e4d4d2a273cf90e890ceebc999de6a56`):
+
+```
+=== Error Trace: e4d4d2a273cf90e890ceebc999de6a56 ===
+Span count: 6
+
+  Span: SELECT db-lab-8
+    Duration: 29006us
+    Span ID: 025e33190fbdd8b4
+    db.name: db-lab-8
+    db.statement: SELECT item.id, item.type, item.parent_id, item.title...
+    db.system: postgresql
+    db.user: postgres
+    error: true  ← ERROR FLAG
+
+  Span: GET /items/ http send
+    Duration: 605us
+    Span ID: 5d0ee97971c8d208
+
+  Span: GET /items/ http send
+    Duration: 39us
+    Span ID: 4e0fdf6212552898
+
+  Span: GET /items/ http send
+    Duration: 15us
+    Span ID: 38fe92fb73e4c753
+
+  Span: connect
+    Duration: 3013us
+    Span ID: d912e43dbaaa5000
+    db.name: db-lab-8
+    db.system: postgresql
+
+  Span: GET /items/
+    Duration: 83988us
+    Span ID: eecf4bdcfe8208a0
+```
+
+**Key observations:**
+- The `SELECT db-lab-8` span has `error: true` indicating the database query failed
+- The error occurred when PostgreSQL was stopped, causing `connection is closed`
+- The trace shows the full request flow: HTTP request → database query → error → response
+
+---
 
 ## Task 3C — Observability MCP tools
 
-<!-- Paste agent responses to "any errors in the last hour?" under normal and failure conditions -->
+**CHECKPOINT: PASS** — Observability MCP tools implemented and agent responds correctly.
+
+**Implemented MCP tools** in `mcp/mcp-obs/`:
+
+1. **logs_search** — Search logs using LogsQL query
+2. **logs_error_count** — Count errors per service over a time window
+3. **traces_list** — List recent traces for a service
+4. **traces_get** — Fetch a specific trace by ID
+
+**Nanobot logs showing tools registered:**
+```
+nanobot-1  | MCP: registered tool 'mcp_obs_logs_search' from server 'obs'
+nanobot-1  | MCP: registered tool 'mcp_obs_logs_error_count' from server 'obs'
+nanobot-1  | MCP: registered tool 'mcp_obs_traces_list' from server 'obs'
+nanobot-1  | MCP: registered tool 'mcp_obs_traces_get' from server 'obs'
+nanobot-1  | MCP server 'obs': connected, 4 tools registered
+```
+
+### Agent response under normal conditions (PostgreSQL running)
+
+**User:** "Any LMS backend errors in the last 10 minutes?"
+
+**Nanobot tool calls:**
+```
+Tool call: mcp_obs_logs_search({"query": "service.name:\"lms\" severity:ERROR", "time_range": "10m", "limit": 10})
+Tool call: mcp_obs_logs_error_count({"service": "lms", "time_range": "10m"})
+```
+
+**Agent response:**
+```
+Good news! **No LMS backend errors** in the last 10 minutes.
+```
+
+### Agent response under failure conditions (PostgreSQL stopped)
+
+**User:** "How is the backend doing?"
+
+**Nanobot tool calls:**
+```
+Tool call: mcp_obs_logs_error_count({"time_range": "1h"})
+Tool call: mcp_obs_logs_search({"query": "severity:ERROR", "time_range": "1h", "limit": 10})
+```
+
+**Agent response:**
+```
+The backend is **not doing well** right now. Here's what I found:
+
+## LMS Backend Status: ❌ Unhealthy
+
+**Issue:** HTTP 4...
+```
+
+**User:** "Any LMS backend errors in the last 10 minutes?"
+
+**Nanobot tool calls:**
+```
+Tool call: mcp_obs_logs_search({"query": "service.name:\"Learning Management Service\" severity:ERROR", "time_range": "10m", "limit": 20})
+Tool call: mcp_obs_traces_list({"service": "Learning Management Service", "limit": 5})
+```
+
+**Agent response:**
+```
+## LMS Backend Errors — Last 10 Minutes
+
+**Yes, there is 1 error** in the last 10 minutes:
+
+| Time (UTC) | Error Type | ...
+```
+
+**Another agent response (Any errors in the last hour?):**
+```
+Yes, there was **1 error** in the last hour:
+
+**Error Details:**
+- **Time:** 2026-03-31 12:19:42 UTC (about 4 minutes ago)
+- **Service:** Learning Management Service
+- **Event:** db_query
+- **Error:** (sqlalchemy.dialects.postgresql.asyncpg.InterfaceError) ... connection is closed
+```
+
+### Observability skill
+
+Created at `nanobot/workspace/skills/observability/SKILL.md` teaching the agent:
+- Start with `logs_error_count` to check for recent errors
+- Use `logs_search` to inspect details and extract `trace_id`
+- Use `traces_get` to inspect the failing request path
+- Summarize findings concisely instead of dumping raw JSON
+- Focus on scoped time ranges like "last 10 minutes" to avoid stale data
 
 ## Task 4A — Multi-step investigation
 

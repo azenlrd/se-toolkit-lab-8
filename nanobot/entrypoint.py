@@ -65,6 +65,17 @@ def main():
             }
         }
 
+    # Configure mcp_obs MCP server
+    if "VICTORIALOGS_URL" in os.environ and "VICTORIATRACES_URL" in os.environ:
+        config["tools"]["mcpServers"]["obs"] = {
+            "command": "python",
+            "args": ["-m", "mcp_obs"],
+            "env": {
+                "VICTORIALOGS_URL": os.environ["VICTORIALOGS_URL"],
+                "VICTORIATRACES_URL": os.environ["VICTORIATRACES_URL"],
+            }
+        }
+
     with open(resolved_path, "w") as f:
         json.dump(config, f, indent=2)
 
